@@ -1,11 +1,45 @@
-import NextAuth, { NextAuthOptions } from "next-auth";
+import NextAuth, { User } from "next-auth";
+import CredentialsProvider from "next-auth/providers/credentials";
 
 export const BASE_PATH = "/api/auth";
 
 const authOptions = {
-  providers:[],
-  basePath: BASE_PATH,
-  secret:process.env.NEXTAUTH_SECRET
-}
+  providers: [
+    CredentialsProvider({
+      name: "Credentials",
+      credentials: {
+        username: { label: "Username", type: "text", placeholder: "jsmith" },
+        password: { label: "Password", type: "password" },
+      },
+      async authorize(credentials, req): Promise<User | null>  {
+        const users = [
+          {
+            id: "1",
+            userName: "johnDoe",
+            name: "John Doe",
+            email: "john.doe@example.com",
+            password: "password123",
+          },
+          {
+            id: "2",
+            userName: "janeSmith",
+            name: "Jane Smith",
+            email: "jane.smith@example.com",
+            password: "password456",
+          },
+        ];
 
-export const {handlers, auth, signIn, signOut } = NextAuth(authOptions)
+        const user = users.find((user) =>
+            user.userName === credentials?.username &&
+            user.password === credentials?.password
+        );
+
+        return user || null;
+      },
+    }),
+  ],
+  basePath: BASE_PATH,
+  secret: process.env.NEXTAUTH_SECRET,
+};
+
+export const { handlers, auth, signIn, signOut } = NextAuth(authOptions);
