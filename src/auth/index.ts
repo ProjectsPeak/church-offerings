@@ -1,9 +1,14 @@
 import NextAuth, { User } from "next-auth";
+import { PrismaAdapter } from "@auth/prisma-adapter"
 import CredentialsProvider from "next-auth/providers/credentials";
+
+import prisma from "@/lib/prisma";
+import { Adapter } from "next-auth/adapters";
 
 export const BASE_PATH = "/api/auth";
 
 const authOptions = {
+  adapter: PrismaAdapter(prisma) as Adapter,
   providers: [
     CredentialsProvider({
       name: "Credentials",
@@ -39,7 +44,7 @@ const authOptions = {
     }),
   ],
   basePath: BASE_PATH,
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: process.env.AUTH_SECRET,
 };
 
 export const { handlers, auth, signIn, signOut } = NextAuth(authOptions);
