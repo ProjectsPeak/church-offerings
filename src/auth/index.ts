@@ -11,7 +11,8 @@ export const BASE_PATH = "/api/auth";
 const authOptions = {
   adapter: PrismaAdapter(prisma) as Adapter,
   providers: [
-    Credentials({})
+    Credentials({
+    }),
   ],
   basePath: BASE_PATH,
   secret: process.env.AUTH_SECRET,
