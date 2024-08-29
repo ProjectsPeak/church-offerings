@@ -1,4 +1,4 @@
-import NextAuth, { Session } from "next-auth";
+import NextAuth, { Session, User } from "next-auth";
 import { UserRole } from "@prisma/client";
 import { JWT } from "@auth/core/jwt";
 import { PrismaAdapter } from "@auth/prisma-adapter";
@@ -8,6 +8,7 @@ import Credentials from "next-auth/providers/credentials";
 import { LoginSchema } from "../../schemas";
 import { getUserByEmail, getUserById } from "../../data/user";
 import bcrypt from "bcryptjs";
+import { error } from "console";
 
 
 
@@ -38,11 +39,27 @@ const authOptions = {
       },
     }),
   ],
+  pages:{
+    signIn:"/auth/login",
+    error:"/auth/error"
+  },
   secret: process.env.AUTH_SECRET,
   session: {
     strategy: "jwt" as "jwt",
   },
-  callbacks: {
+  callbacks: { 
+    async signIn({user}: {user: User}){
+      if (!user.id) {
+        return false;
+      }
+      const existingUser = await getUserById(user.id);
+
+      //prevent signIn without email verification
+      if (!existingUser || !existingUser.emailVerified) {
+        return false;
+      }
+      return true;
+    },
     async jwt({ token }: { token: JWT }) {
       if (!token.sub) return token;
       const existingUser = await getUserById(token.sub)
